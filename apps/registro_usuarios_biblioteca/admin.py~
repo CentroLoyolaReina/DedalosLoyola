@@ -1,0 +1,23 @@
+from django.contrib import admin
+from django.db import models
+from .models import RegistroUsuarios
+from django import forms
+from .forms import OpacLibroUsuarioForm #, RegistroUsuariosForm 
+
+#from ajax_select.admin import AjaxSelectAdmin 
+
+
+
+
+
+class RegistroUsuariosAdmin(admin.ModelAdmin):
+
+   form = OpacLibroUsuarioForm
+
+   list_display = ('nombre_apellidos','institucion_id','tipo_usuario','recurso_prestamo_id','tipo_servicio_solicitado','fecha','hora')
+
+
+    
+
+admin.site.register(RegistroUsuarios,RegistroUsuariosAdmin)
+

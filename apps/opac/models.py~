@@ -1,0 +1,492 @@
+from __future__ import unicode_literals
+from django.db import models
+from django.utils import  timezone
+from django.contrib.postgres.fields import ArrayField
+from contabilidad.models import Adquisicion
+
+#Para registros automaticos
+import uuid
+
+import ipdb
+
+class OpacCatedra(models.Model):
+    nombre_catedra = models.CharField(max_length=60,default=" ")
+    localizacion = models.TextField(default=" ")
+
+    class Meta:
+        managed = True
+        db_table = 'opac_catedra'
+        verbose_name = 'Cátedra'
+        verbose_name_plural = 'Listado de Catedras'
+
+    def __str__(self):
+        return self.nombre_catedra
+    
+class OpacInstitucion(models.Model):
+    nombre_institución = models.CharField(max_length=70)
+    es_externa = models.BooleanField(default=False)
+    direccion_institución = models.TextField(max_length=200,blank=True,null=True)
+    telf_inst1 = models.CharField(max_length=13,blank=True,null=True)
+    telf_inst2 = models.CharField(max_length=13,blank=True,null=True)
+    fax_inst = models.CharField(max_length=13,blank=True,null=True)
+    email_inst = models.CharField(max_length=50,blank=True,null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'opac_institucion'
+        verbose_name = 'Institución'
+        verbose_name_plural = 'Listado de Instituciones'
+        
+    def __str__(self):
+        return self.nombre_institución
+    
+class OpacIdioma(models.Model):
+    idioma = models.CharField(max_length=40,default=" ")
+
+    class Meta:
+        db_table = 'opac_idioma'
+        managed = True
+        verbose_name = 'Idioma'
+        verbose_name_plural = 'Idiomas'
+
+
+    def __str__(self):
+        return self.idioma
+
+class OpacPais(models.Model):
+    nombre = models.CharField(max_length=100, default=" " )
+    codigo_iso = models.CharField(max_length=2,default="ND")
+    
+    class Meta:
+        managed = True
+        db_table = 'opac_pais'
+        verbose_name = 'Pais'
+        verbose_name_plural = 'Listado de Paises'
+
+
+    def __str__(self):
+        return self.nombre    
+    
+
+class OpacCiudad(models.Model):
+    nombre_ciudad = models.CharField(max_length=50,default=" ")
+    nombre_pais = models.ForeignKey(OpacPais,default=1,on_delete=models.DO_NOTHING)
+    
+    class Meta():
+        db_table = 'opac_ciudades'
+        managed = True
+        verbose_name = 'Ciudad'
+        verbose_name_plural = 'Ciudades'
+
+    def __str__(self):
+        return self.nombre_ciudad   
+
+class OpacEditorial(models.Model):
+    nombre_editorial = models.CharField(max_length=100, default=" " )
+    pais_origen = models.ForeignKey(OpacPais, on_delete=models.CASCADE, default=4)
+    
+    class Meta:
+        managed = True
+        db_table = 'opac_editorial'
+        verbose_name = 'Editorial'
+        verbose_name_plural = 'Listado de Editoriales'
+
+
+    def __str__(self):
+        return self.nombre_editorial    
+        
+
+class OpacAutor(models.Model):
+    nombre_autor = models.CharField(max_length=150, default=" " )
+    
+    class Meta:
+        managed = True
+        db_table = 'opac_autor'
+        verbose_name = 'Autor'
+        verbose_name_plural = 'Listado de Autores'
+
+    def __str__(self):
+        return self.nombre_autor    
+
+
+class OpacTesisAutor(models.Model):
+    nombre_autor = models.CharField(max_length=150, default=" " )
+    
+    class Meta:
+        managed = True
+        db_table = 'opac_tesis_autor'
+        verbose_name = 'Autor de Tesis'
+        verbose_name_plural = 'Listado de Autores de las Tesis'
+
+    def __str__(self):
+        return self.nombre_autor    
+
+
+
+
+class OpacSoporte(models.Model):
+    tipo_soporte = models.CharField(max_length=40,default=" ")
+
+    class Meta:
+        db_table = 'opac_soporte'
+        managed = True
+        verbose_name = 'Soporte de Recurso'
+        verbose_name_plural = 'Listado de Soportes de Recurso'
+    
+    def __str__(self):
+        return self.tipo_soporte
+    
+    
+class OpacColeccion(models.Model):
+    nombre_coleccion = models.CharField(max_length=100,default=" ")
+
+    class Meta:
+        managed = True
+        db_table = 'opac_coleccion'
+        verbose_name = 'Coleccion'
+        verbose_name_plural = 'Listado de Colecciones'
+
+    
+    
+    def __str__(self):
+        return self.nombre_coleccion
+
+
+    
+class OpacDescriptor(models.Model):
+    nombre_descriptor = models.CharField(max_length=100,default=1)
+    nombre_antiguo_descriptor = models.CharField(max_length=100,default=1)
+    
+ 
+    class Meta:
+        managed = True
+        db_table = 'opac_descriptores_migration_1'
+        verbose_name = 'Descriptor'
+        verbose_name_plural = 'Listado de Descriptores'
+    
+    def __str__(self):
+        return self.nombre_descriptor
+    
+
+
+
+class OpacMaterias(models.Model):
+    nombre_materia = models.CharField(max_length=40, verbose_name="disciplina", default=" ")
+    descripcion_materia = models.TextField(max_length=300, blank=True)
+
+    class Meta:
+        managed = True
+        db_table = 'opac_materias'
+        verbose_name = 'Disciplina'
+        verbose_name_plural = 'Listado de Disciplinas'
+
+    def __str__(self):
+        return self.nombre_materia
+
+
+
+class OpacLibroEncuadernacion(models.Model):
+    encuadernacion_libro = models.CharField(max_length=60,default=' ' )
+    
+    class Meta:
+        managed = True
+        db_table = 'opac_libro_encuadernacion'
+        verbose_name = 'Encuadernacion del Libro'
+        verbose_name_plural = 'Listado de Encuadernaciones de los Libros'
+
+    def __str__(self):
+        return self.encuadernacion_libro
+    
+    
+    
+    
+class OpacLibro(models.Model):
+    no_registro_entrada = models.IntegerField(primary_key=True)
+    fecha_registro = models.DateTimeField(auto_now_add=True)
+    título = models.CharField(max_length=120, default=' ')
+    subtítulo = models.CharField(max_length=120, default=' ',blank=True,null=True)
+    autor = models.ForeignKey(OpacAutor,default=7508,on_delete=models.DO_NOTHING)
+    autor2 = models.ForeignKey(OpacAutor,default=7508,blank=True,null=True,on_delete=models.DO_NOTHING,related_name='segundo_autor')
+    autor3 = models.ForeignKey(OpacAutor,default=7508,blank=True,null=True,on_delete=models.DO_NOTHING,related_name='tercer_autor')
+    editorial = models.ForeignKey(OpacEditorial,default=2782,on_delete=models.DO_NOTHING)
+    coleccion = models.ForeignKey(OpacColeccion,default=10,blank=True,null=True,on_delete=models.DO_NOTHING)
+    numero_en_colección = models.IntegerField(default=2,blank=True,null=True)
+    numero_ejemplares = models.IntegerField(default=0,blank=True,null=True)
+    numero_ejemplares_prestados = models.IntegerField(default=0,blank=True,null=True)
+    edición = models.CharField(max_length=40, blank=True,null=True)
+    reimpresion = models.BooleanField(default=False)
+    tomos = models.CharField(max_length=6, default='1',blank=True,null=True)
+    lugar_de_edición = models.ForeignKey(OpacCiudad,default='1',blank=True,null=True)
+    año_de_edición = models.CharField(max_length=9, default='',blank=True,null=True)
+    paginado = models.CharField(max_length=40, default=' ')
+    signatura_topografica = models.CharField(max_length=50,default='[INF.JUV] 000 ROW H') 
+    altura_en_cm = models.IntegerField(default=0,blank=True,null=True)
+    descriptores = models.ManyToManyField(OpacDescriptor,default=1,related_name="descriptores_multiples")
+    idioma = models.ForeignKey(OpacIdioma, default='1')
+    tipo_soporte = models.ForeignKey(OpacSoporte,on_delete=models.DO_NOTHING,default=2)
+ #   localización = models.CharField(max_length=120, default='-',blank=True,null=True)
+    notas = models.TextField(blank=True, null=True, default=' ')
+    tipo_de_encuadernación = models.ForeignKey(OpacLibroEncuadernacion,on_delete=models.CASCADE,default=1)
+    #procedencia = models.ForeignKey(Adquisicion,on_delete=models.CASCADE,default=1)
+    procedencia = models.CharField(max_length=20,default='COMPRA')
+    baja = models.BooleanField(default=False)
+   # solo_consulta = models.BooleanField(default=False)
+    en_reparación = models.BooleanField(default=False)
+    ISBN = models.CharField(max_length=20,blank=True, null=True)
+
+
+    class Meta:
+        managed = True
+        db_table = 'opac_libro_legacy'
+        verbose_name = 'Libro'
+        verbose_name_plural = 'Listado de Libros'
+#        ordering = ['no_reg']
+        
+    def get_descriptores(self):
+        return ",".join([str(p) for p in self.descriptores.all()])
+    get_descriptores.short_description = 'descriptores'
+
+    def get_autor(self):
+        return self.autor.nombre_autor
+    get_autor.short_description = 'autor'
+
+    def get_autor2(self):
+        if self.autor2:
+            return self.autor2.nombre_autor
+        else:
+            return None    
+    get_autor2.short_description = 'autor2'
+
+    def get_autor3(self):
+        if self.autor3:
+            return self.autor2.nombre_autor
+        else:
+            return None    
+    get_autor3.short_description = 'autor3'    
+    
+    def get_editorial(self):
+        return self.editorial.nombre_editorial
+    get_editorial.short_description = 'casa_editora'
+
+    def get_coleccion(self):
+        return self.coleccion.nombre_coleccion
+    get_coleccion.short_description = 'coleccion'
+
+
+        
+    def __str__(self):
+        return self.título    
+    
+
+class OpacMarc(models.Model):
+    nr = models.IntegerField(db_column='NR', blank=True, null=True)  # Field name made lowercase.
+    etiqueta = models.CharField(db_column='Etiqueta', max_length=3, blank=True, null=True)  # Field name made lowercase.
+    tamaño = models.CharField(db_column='Tamaño', max_length=4, blank=True, null=True)  # Field name made lowercase.
+    posición = models.CharField(db_column='Posición', max_length=5, blank=True, null=True)  # Field name made lowercase.
+    indicador = models.CharField(db_column='Indicador', max_length=2, blank=True, null=True)  # Field name made lowercase.
+    subcampo = models.CharField(db_column='Subcampo', max_length=2, blank=True, null=True)  # Field name made lowercase.
+    contenido = models.CharField(db_column='Contido', max_length=250, blank=True, null=True)  # Field name made lowercase.
+
+    class Meta:
+        managed = True
+        db_table = 'opac_marc'
+        verbose_name_plural = 'Opciones de MARC21 (A)'
+
+    def __str__(self):
+        return self.contenido    
+
+
+class OpacMarc2(models.Model):
+    num_rex = models.IntegerField()
+    sinatura = models.CharField(max_length=20, blank=True, null=True)
+    data_rex = models.DateTimeField(blank=True, null=True)
+    título = models.CharField(max_length=120, blank=True, null=True)
+    autor = models.CharField(max_length=40, blank=True, null=True)
+    autor2 = models.CharField(max_length=40, blank=True, null=True)
+    omr = models.CharField(max_length=40, blank=True, null=True)
+    editorial = models.CharField(max_length=40, blank=True, null=True)
+    ISBN = models.CharField(max_length=20, blank=True, null=True)
+    colección = models.CharField(max_length=30, blank=True, null=True)
+    edicion = models.CharField(max_length=2, blank=True, null=True)
+    lugar_impr = models.CharField(max_length=20, blank=True, null=True)
+    ano_impr = models.CharField(max_length=4, blank=True, null=True)
+    temas = models.CharField(max_length=60, blank=True, null=True)
+    idioma = models.CharField(max_length=15, blank=True, null=True)
+    soporte = models.CharField(max_length=15, blank=True, null=True)
+    prestado = models.NullBooleanField()
+    no_prestar = models.NullBooleanField()
+    baja = models.NullBooleanField()
+    listaespera = models.NullBooleanField()
+    notas = models.TextField(blank=True, null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'opac_marc2'
+        verbose_name_plural = 'Opciones de MARC21 (B)'
+
+    def __str__(self):
+        return self.titulo    
+
+
+
+class OpacTempPrestados(models.Model):
+    curso = models.CharField(max_length=6, blank=True, null=True)
+    ncb = models.CharField(max_length=8, blank=True, null=True)
+    nombrecompleto = models.CharField(max_length=50, blank=True, null=True)
+    num_rex = models.CharField(max_length=10, blank=True, null=True)
+    fecha_devolucion = models.CharField(max_length=10, blank=True, null=True)
+    sinatura = models.CharField(max_length=20, blank=True, null=True)
+    soporte = models.CharField(max_length=15, blank=True, null=True)
+    titulo = models.CharField(max_length=120, blank=True, null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'opac_temp_prestados'
+        verbose_name  = 'Detalles de Prestamo Temporal'
+        verbose_name_plural = 'Detalles de Prestamos Temporales'
+
+        
+    def __str__(self):
+        return self.nombrecompleto    
+
+
+class OpacUsuario(models.Model):
+
+    ESTUDIANTE = "ESTD"
+    TRABAJADOR = "TRAB"
+    JUBILADO = "JUBI"
+    
+
+    OCUPACION = (
+        (ESTUDIANTE,"Estudiante"),
+        (TRABAJADOR,"Trabajador"),
+        (JUBILADO,"Jubilado"),
+       )
+    
+    nombre = models.CharField(max_length=25, blank=True, null=True,default='Teclee el nombre')
+    apellidos = models.CharField(max_length=25, blank=True, null=True,default='Teclee los apellidos')
+    ocupacion = models.CharField(max_length=15, choices=OCUPACION, default=ESTUDIANTE)
+    observaciones = models.CharField(max_length=60, blank=True, null=True)
+    fecha_ultimo_prestamo = models.DateTimeField(blank=True, null=True)
+
+    
+     
+    class Meta:
+        managed = True
+        db_table = 'opac_usuario'
+        verbose_name = 'Usuario de la Biblioteca'
+        verbose_name_plural = 'Usuarios de la Biblioteca'
+
+    def __str__(self):
+        return (self.nombre + " "  + self.apellidos)     
+
+
+
+
+class OpacTesis(models.Model):
+
+
+    DOCTOR = "DTOR"
+    MASTER = "MAST"
+    LICENCIADO = "LICD"
+    BACHILLER = "BACH"
+
+    GRADO_ASPIRANTE = (
+        (DOCTOR, "Doctor en Ciencias"),
+        (MASTER, "Master en Ciencias"),
+        (LICENCIADO, "Licenciado"),
+        (BACHILLER, "Bachiller"),
+    )
+
+    TESIS = "TES"
+    TESINA = "TESN"
+ 
+
+
+    TIPO_DOCUMENTO = (
+        (TESIS, "Tesis"),
+        (TESINA, "Tesina"),
+ 
+
+    )
+
+    no_reg = models.IntegerField(default=0)
+    signatura = models.CharField(max_length=50,primary_key=True,default=' ')
+    título = models.CharField(max_length=100)
+    tipo_documento = models.CharField(max_length=10,choices=TIPO_DOCUMENTO,default=TESIS)
+    autor = models.ForeignKey(OpacTesisAutor,related_name='autor1_tesis',on_delete=models.DO_NOTHING,default=1)
+    autor2 = models.ForeignKey(OpacTesisAutor,related_name='autor2_tesis',on_delete=models.DO_NOTHING, blank= True, null= True)
+    institución = models.ForeignKey(OpacInstitucion,related_name='institucion_tesis',on_delete=models.CASCADE, blank= True, null= True)
+    resumen = models.TextField()
+    descriptores= models.ManyToManyField(OpacDescriptor,related_name="descriptores_tesis")
+    tutor_1 = models.CharField(max_length=100,default=" ")
+    tutor_2 = models.CharField(max_length=100,default=" ", null = True, blank = True)
+    fecha = models.DateField(default=timezone.now)
+    año = models.CharField(db_column='ano',max_length=10, null=True, blank=True)
+    disciplina = models.ForeignKey(OpacMaterias,on_delete=models.CASCADE,default=0)
+    grado_aspirante = models.CharField(max_length=20,choices=GRADO_ASPIRANTE,default=BACHILLER)
+    palabras_clave = models.CharField(max_length=200, default = '')
+   # localización = models.CharField(max_length=40,default=' ')
+   # cátedra = models.ForeignKey(OpacCatedra,on_delete=models.CASCADE,blank=True,null=True)
+    baja = models.NullBooleanField()
+
+
+    class Meta:
+        managed = True
+        db_table = 'opac_tesis'
+        verbose_name = 'Tesis'
+        verbose_name_plural = 'Listado de Tesis'
+
+
+    def __str__(self):
+        return self.título  
+
+    def get_descriptores(self):
+        return ",".join([str(p) for p in self.descriptores.all()])
+    get_descriptores.short_description = 'descriptores'  
+
+
+
+    
+class OpacRevsEjemplar(models.Model):
+    numero_registro = models.IntegerField(primary_key=True)
+    nombre_revista = models.CharField(max_length=100,default='Teclee el nombre de la revista')
+    numero = models.CharField(max_length=20,default='teclee ')
+    ano = models.CharField(max_length=20,default='teclee ')
+    ISSN = models.CharField(max_length=13,default='Teclee la Signatura de la revista')
+    fecha = models.CharField(max_length=40,default='Teclee la fecha de la Revista')
+    coleccion = models.ForeignKey(OpacColeccion,on_delete=models.DO_NOTHING,default=1)
+    signatura = models.CharField(max_length=20,default='teclee ')
+
+    class Meta:
+        managed = True
+        db_table = 'opac_revs_ejemplar'
+        verbose_name = 'Revista'
+        verbose_name_plural = 'Ejemplares de Revista'
+        
+    def __str__(self):
+        return self.nombre_revista
+
+
+    
+class OpacRevsArticulo(models.Model):
+    titulo = models.CharField(max_length=256,default='Teclee el titulo del Articulo')
+    autor = models.ForeignKey(OpacAutor,default=1,related_name='autor_principal',on_delete=models.DO_NOTHING)
+    autor2 = models.ForeignKey(OpacAutor,default=1,related_name='autor_secundario',blank=True,null=True,on_delete=models.DO_NOTHING)
+    autor3 = models.ForeignKey(OpacAutor,default=1,related_name='autor_tercero',blank=True,null=True,on_delete=models.DO_NOTHING)
+    autor4 = models.ForeignKey(OpacAutor,default=1,related_name='autor_cuarto',blank=True,null=True,on_delete=models.DO_NOTHING)
+    pag_pag = models.CharField(max_length=10,default='Pagina a Pagina')
+    resumen = models.TextField(default='Teclee la Resena del Articulo')
+    revista = models.ForeignKey(OpacRevsEjemplar,default=1)
+    descriptores = models.ForeignKey(OpacDescriptor,on_delete=models.DO_NOTHING)
+
+    class Meta:
+        managed = True
+        db_table = 'opac_revs_articulo'
+        verbose_name = 'Articulo de Revista'
+        verbose_name_plural = 'Articulos de la Revista'
+
+
+    def __str__(self):
+        return self.titulo    
+   

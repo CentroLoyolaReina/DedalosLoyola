@@ -1,0 +1,16 @@
+from django.contrib import admin
+from .models import TipoBoletin,Boletin
+
+
+
+class TipoBoletinAdmin(admin.ModelAdmin):
+    search_display = ('tipo_de_boletin',)
+    list_display = ['tipo_de_boletin',]
+
+class BoletinAdmin(admin.ModelAdmin):
+    search_display = ('nov_boletin_titulo','nov_boletin_autor','nov_boletin_fecha','nov_boletin_categoria','tipo_de_boletin_id',)
+    list_display  = ['nov_boletin_titulo','nov_boletin_autor','nov_boletin_fecha','nov_boletin_categoria','tipo_de_boletin_id',]   
+
+
+admin.site.register(TipoBoletin,TipoBoletinAdmin)
+admin.site.register(Boletin,BoletinAdmin)  

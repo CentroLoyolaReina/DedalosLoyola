@@ -1,0 +1,50 @@
+from  django.db import models
+from django.utils import timezone
+
+
+class TipoBoletinREcurso(models.Model):
+    tipo_recurso = models.CharField(max_length=50)
+
+    class Meta:
+        managed =  True
+        db_table = 'nov_bibliograficas_tipo_recurso'
+        verbose_name = 'tipo de recurso'
+        verbose_name_plural = 'listado de recursos de boletin'
+
+    def __str__(self):
+        return self.tipo_recurso
+
+class TipoBoletin(models.Model):
+    tipo_de_boletin = models.CharField(max_length=60,default='Teclee el tipo de boletin')
+
+
+    class Meta:
+        managed = True
+        db_table = 'nov_bibliograficas_tipo_boletin'
+        verbose_name = 'Tipo de boletin'
+        verbose_name_plural = 'Tipos de boletines'
+
+        def __str__(self):
+            return self.tipo_de_boletin
+    
+
+
+class Boletin(models.Model):
+    nov_boletin_titulo = models.CharField(max_length=100)
+    nov_boletin_autor = models.CharField(max_length=30)
+    nov_boletin_fecha = models.DateTimeField(default=timezone.now)
+    nov_boletin_text = models.TextField(default="Por favor teclee el texto de presentación del boletín")
+    nov_boletin_categoria = models.CharField(max_length=30)
+    imagen_de_cubierta = models.ImageField(upload_to='images/', height_field=None, width_field=None,default="Suba la imagen de la cubierta")
+    documento_de_boletin = models.FileField(upload_to='boletines/', default="Suba el documento del Boletín")
+    tipo_de_boletin_id = models.ForeignKey(TipoBoletin,on_delete=models.DO_NOTHING)
+    
+    class Meta:
+        managed = True
+        db_table = 'nov_bibliograficas_boletin'
+        verbose_name = 'boletin'
+        verbose_name_plural = 'boletines'
+
+
+    def __str__(self):
+        return self.nov_boletin_titulo

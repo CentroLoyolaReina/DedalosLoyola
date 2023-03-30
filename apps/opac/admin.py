@@ -1,0 +1,220 @@
+from django.contrib import admin
+from .models import OpacUsuario, OpacInstitucion, OpacLibro, OpacTesis,\
+    OpacInstitucion, OpacMaterias, OpacAutor, OpacColeccion, OpacEditorial,OpacDescriptor, OpacSoporte,\
+    OpacIdioma, OpacMaterias, OpacTesisAutor, OpacLibroEncuadernacion, OpacRevsEjemplar, OpacRevsArticulo
+from django import forms
+from django.db.models import Max
+
+
+from nested_admin import NestedModelAdmin,NestedTabularInline, NestedStackedInline, NestedInlineModelAdmin,NestedGenericTabularInline
+from django.contrib.admin import StackedInline
+from django.db import models
+from django.forms import Textarea
+from opac.forms import LibroForm, TesisForm
+
+#Para La prueba con Prefetch
+from django.db.models import Prefetch
+
+#Para el filtrado por fechas
+from rangefilter.filter  import DateRangeFilter, DateTimeRangeFilter 
+
+
+#@admin.register(OpacRevsEjemplar,NestedTabularInline)
+
+@admin.register(OpacRevsEjemplar)
+class RevsEjemplarAdmin(admin.ModelAdmin):
+    list_display = ['numero_registro','signatura','nombre_revista','fecha','ano','ISSN']
+    
+
+@admin.register(OpacRevsArticulo)
+class RevsArticuloAdmin(admin.ModelAdmin):
+    list_display = ['titulo','revista','descriptores','autor','autor2','autor3','autor4','resumen','pag_pag']
+
+    
+
+#class RevsArticuloInline(NestedStackedInline):    
+
+   # form = RevistaArticuloForm
+#    model = OpacRevsArticulo
+#    extra = 0
+
+    
+#    fieldsets = [
+#        ( None, {'fields':['titulo','descriptores',('autor','autor2'),('autor3','autor4'),('resumen','pag_pag')]}),
+#    ]
+
+#    class Media:
+#        js = ('js/admin/my_own_admin.js',)    
+#        css = {
+#             'all': ('css/admin/my_own_admin.css',)
+             
+#       }
+    
+
+#@admin.register(OpacRevsEjemplar,NestedModelAdmin)    
+#class RevsEjemplarInline(NestedModelAdmin):
+
+   # form = RevistaEjemplarForm
+#    fieldsets = [
+#        ( None, {'fields':['numero_registro','signatura','nombre_revista',('nombre_materia','editorial'),'institución','volumen','No','Fecha','Año','ISSN','localizacion']}),
+#    ]
+
+#    list_display = ['numero_registro','signatura','nombre_revista','volumen','No','Fecha','Año','ISSN']
+#    search_fields = ['no_reg','signatura','nombre_revista','volumen','No','Fecha','Año','ISSN']
+
+#    inlines = [RevsArticuloInline]
+#    search_fields = ['nombre_articulo','autor','autor2','autor3','autor4']
+
+
+#    def get_last_revs_ejemplar_register(self):
+#        return OpacRevsEjemplar.objects.all().aggregate(Max('numero_registro'))['numero_registro__max'] + 1        
+
+#    def get_form(self, request, obj=None, **kwargs):
+#        form = super(RevsEjemplarInline, self).get_form(request, obj, **kwargs)
+
+#        num = OpacRevsEjemplar.objects.all().count() 
+#        if num > 0:
+#            form.base_fields['numero_registro'].initial = self.get_last_revs_ejemplar_register()
+#            form.base_fields['signatura'].initial = str(self.get_last_revs_ejemplar_register()) + "-"
+        
+#        else:
+#            form.base_fields['numero_registro'].initial = 1
+#            form.base_fields['signatura'].initial = str(1) + "-"
+
+
+#        return form
+
+     
+@admin.register(OpacUsuario)
+class UsuarioAdmin(admin.ModelAdmin):
+    list_display = ('nombre','apellidos','observaciones','ocupacion')
+    search_fields = ['nombre','apellidos','observaciones','ocupacion']
+
+@admin.register(OpacTesisAutor)
+class TesisAutorAdmin(admin.ModelAdmin):
+    list_display = ('nombre_autor',)
+    search_fields = ['nombre_autor']
+
+
+@admin.register(OpacInstitucion)
+class InstituciónAdmin(admin.ModelAdmin):
+    # form = OpacInstituciónForm
+
+    list_display = ('nombre_institución','es_externa','direccion_institución','telf_inst1','telf_inst2','fax_inst','email_inst')
+    search_fields = ['nombre_institución','es_externa']
+
+@admin.register(OpacEditorial)
+class EditorialAdmin(admin.ModelAdmin):
+        
+    list_display = ('nombre_editorial','pais_origen')
+    search_fields = ['nombre_editorial','pais_origen__nombre']
+
+
+
+@admin.register(OpacLibroEncuadernacion)
+class OpacLibroEncuadernacionAdmin(admin.ModelAdmin):
+        
+    list_display = ('encuadernacion_libro',)
+    search_fields = ['encuadernacion_libro']
+    
+
+    
+
+@admin.register(OpacDescriptor)
+class DescriptorAdmin(admin.ModelAdmin):
+    pass
+        
+    list_display = ('nombre_descriptor',)
+    search_fields = ['nombre_descriptor']
+
+
+@admin.register(OpacSoporte)
+class DescriptorAdmin(admin.ModelAdmin):
+    pass
+        
+    list_display = ('tipo_soporte',)
+    search_fields = ['tipo_soporte']
+
+
+
+
+@admin.register(OpacAutor)
+class AutorAdmin(admin.ModelAdmin):
+    list_display = ('id','nombre_autor')
+    search_fields = ['nombre_autor']
+
+
+@admin.register(OpacLibro)
+class LibroModelAdmin(admin.ModelAdmin):
+
+    form = LibroForm
+    search_fields = ['autor__nombre_autor','autor2__nombre_autor','editorial__nombre_editorial','título']
+    
+    
+    
+    def get_queryset(self, request):
+        opac_libro_qs = super(LibroModelAdmin, self).get_queryset(request)
+        opac_libro_qs = opac_libro_qs.prefetch_related('autor','autor2','autor3')
+        return opac_libro_qs
+    
+    
+    list_display = ('título','get_descriptores','get_autor','get_autor2','get_autor3','get_editorial','coleccion','fecha_registro','tomos','procedencia')
+   # list_filter = (('fecha_registro',DateTimeRangeFilter),)
+    
+
+    
+    def get_last_book_register(self):
+        if OpacLibro.objects.all():
+            return OpacLibro.objects.all().aggregate(Max('no_registro_entrada'))['no_registro_entrada__max'] + 1
+        else:
+            return(1) 
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super(LibroModelAdmin, self).get_form(request, obj, **kwargs)
+        form.base_fields['no_registro_entrada'].initial = self.get_last_book_register()
+        form.base_fields['signatura_topografica'].initial = str(self.get_last_book_register()) + "-"
+        return form
+
+@admin.register(OpacColeccion)
+class ColeccionAdmin(admin.ModelAdmin):
+  list_display = ('nombre_coleccion',)
+  search_fields = ['nombre_coleccion']
+
+
+@admin.register(OpacMaterias)
+class MateriasAdmin(admin.ModelAdmin):
+    list_display = ('nombre_materia',)
+    search_fields = ['nombre_materia']
+    
+    
+
+@admin.register(OpacTesis)    
+class TesisAdmin(admin.ModelAdmin):
+
+    form = TesisForm
+
+    def get_last_tesis_register(self):
+        return OpacTesis.objects.all().aggregate(Max('no_reg'))['no_reg__max'] + 1        
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super(TesisAdmin, self).get_form(request, obj, **kwargs)
+
+        num = OpacTesis.objects.all().count() 
+        if num > 0:
+            form.base_fields['no_reg'].initial = self.get_last_tesis_register()
+            form.base_fields['signatura'].initial = str(self.get_last_tesis_register()) + "-"
+        
+        else:
+            form.base_fields['no_reg'].initial = 1
+            form.base_fields['signatura'].initial = str(1) + "-"
+
+
+        return form
+    
+    #readonly_fields = ('no_reg',)
+    list_display = ('no_reg','signatura','título','tipo_documento','autor','autor2','get_descriptores','institución','tutor_1','tutor_2','disciplina','grado_aspirante')
+    search_fields = ['signatura','título','tipo_documento','grado_aspirante','autor','autor2']
+     
+
+
+#admin.site.register(OpacRevsEjemplar,RevsEjemplarInline)

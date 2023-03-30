@@ -1,0 +1,118 @@
+from django_elasticsearch_dsl import DocType, Index, Text, indices, Keyword , fields, Text
+from .models import OpacLibro, OpacTesis
+
+
+LibroIndex = Index('opac_libros')
+LibroIndex.settings(
+    number_of_shards=1,
+    number_of_replicas=0
+)
+
+TesisIndex = Index('opac_tesis')
+TesisIndex.settings(
+    number_of_shards=1,
+    number_of_replicas=0
+)
+
+
+
+
+@LibroIndex.doc_type
+class OpacLibroDocument(DocType):
+
+    signatura_topografica = fields.KeywordField()
+    
+    casa_editora = fields.ObjectField(properties={
+        'nombre_editorial': fields.StringField() , 
+       
+    })
+
+    tipo_soporte = fields.ObjectField(properties={
+        'tipo_soporte': fields.StringField() , 
+       
+    })
+
+    autor = fields.ObjectField(properties={
+        'nombre_autor': fields.StringField() , 
+       
+    })
+
+    autor2 = fields.ObjectField(properties={
+        'nombre_autor': fields.StringField() , 
+       
+    })
+
+    autor3 = fields.ObjectField(properties={
+        'nombre_autor': fields.StringField() , 
+       
+    })
+
+
+    descriptores = fields.ObjectField(properties={
+        'nombre_descriptor': fields.StringField() , 
+
+
+    })
+    
+
+    lugar_de_edición = fields.ObjectField(properties={
+        'nombre_ciudad': fields.StringField() , 
+
+    })
+
+    
+    class Meta:
+        model = OpacLibro 
+
+        fields = [
+            'título',
+            'notas',
+            'ISBN',
+           # 'solo_consulta',
+           # 'localización',
+            'paginado',
+            'procedencia',
+            'baja',
+            'en_reparación',
+        ]
+        
+ 
+@TesisIndex.doc_type
+class OpacTesisDocument(DocType):
+
+    signatura = fields.KeywordField()
+    descriptores = fields.ObjectField(properties={
+        'nombre_descriptor': fields.StringField() , 
+       
+    })
+
+    
+    autor = fields.ObjectField(properties={
+        'nombre_autor': fields.StringField() , 
+        
+        
+       
+    })
+
+    autor2 = fields.ObjectField(properties={
+        'nombre_autor': fields.StringField() ,
+        
+       
+    })
+    
+    class Meta:
+        model = OpacTesis
+
+        fields = [
+            'no_reg',
+            'título',
+            'tipo_documento',
+            'resumen',
+            'tutor_1',
+            'tutor_2',
+            'año',
+            'fecha',
+            'grado_aspirante',
+            'palabras_clave',
+          #  'localización',
+        ]
